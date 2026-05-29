@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة النادي الرياضي | GymFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar { background-color: #212529; }
+        .card { border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border: none; }
+        .badge-sub { background-color: #e3f2fd; color: #0d47a1; border: 1px solid #bbdefb; }
+        
+        /* تنسيق حقول التاريخ للأرقام العربية */
+        input[type="date"] {
+            direction: ltr !important;
+            text-align: right;
+            unicode-bidi: plaintext;
+        }
+        .table thead { background-color: #212529; color: white; }
+        .btn-action { margin: 2px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark mb-4">
+    <div class="container">
+        <span class="navbar-brand mb-0 h1">لوحة تحكم GymFlow</span>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>قائمة المشتركين</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">إضافة مشترك جديد +</button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover text-center align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الاسم الكامل</th>
+                        <th>رقم الهاتف</th>
+                        <th>تاريخ البدء</th>
+                        <th>الزيارات المتبقية</th>
+                        <th>نوع الاشتراك</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="membersTable">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addMemberModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة مشترك جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addMemberForm">
+                    <div class="mb-3">
+                        <label class="form-label">الاسم الكامل</label>
+                        <input type="text" class="form-control" id="fullName" required>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">رقم الهاتف</label>
+                            <input type="text" class="form-control" id="phone" required>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">الجنس</label>
+                            <select class="form-select" id="gender">
+                                <option value="ذكر">ذكر</option>
+                                <option value="أنثى">أنثى</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">تاريخ بدء الاشتراك</label>
+                        <input type="date" class="form-control" id="startDate" required>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">عدد الزيارات</label>
+                            <input type="number" class="form-control" id="remainingVisits" value="12" min="0">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">نوع الاشتراك</label>
+                            <select class="form-select" id="subscriptionType">
+                                <option value="12 زيارة/شهر">12 زيارة شهرياً</option>
+                                <option value="شهر واحد">شهر واحد (مفتوح)</option>
+                                <option value="3 شهور">3 شهور (مفتوح)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" id="saveBtn" class="btn btn-success w-100">حفظ المشترك</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editMemberModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">تعديل بيانات المشترك</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editMemberForm">
+                    <input type="hidden" id="editId">
+                    <div class="mb-3">
+                        <label class="form-label">الاسم الكامل</label>
+                        <input type="text" class="form-control" id="editFullName" required>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">رقم الهاتف</label>
+                            <input type="text" class="form-control" id="editPhone" required>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">تاريخ البدء</label>
+                            <input type="date" class="form-control" id="editStartDate" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">الزيارات المتبقية</label>
+                            <input type="number" class="form-control" id="editRemainingVisits" min="0">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">نوع الاشتراك</label>
+                            <select class="form-select" id="editSubscriptionType">
+                                <option value="12 زيارة/شهر">12 زيارة شهرياً</option>
+                                <option value="شهر واحد">شهر واحد (مفتوح)</option>
+                                <option value="3 شهور">3 شهور (مفتوح)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" id="updateBtn" class="btn btn-primary w-100">تحديث البيانات</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const API_URL = '/api/members';
+
+    // 1. جلب البيانات
+    async function loadMembers() {
+        try {
+            const response = await fetch(API_URL);
+            if (!response.ok) throw new Error('Network response was not ok');
+            const members = await response.json();
+            const tableBody = document.getElementById('membersTable');
+            tableBody.innerHTML = '';
+
+            members.forEach(m => {
+                const statusBadge = m.status === 'active' ? 'bg-success' : 'bg-danger';
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${m.id}</td>
+                        <td>${m.fullName}</td>
+                        <td>${m.phone}</td>
+                        <td>${m.startDate || '-'}</td>
+                        <td><span class="badge bg-secondary">${m.remainingVisits || 0}</span></td>
+                        <td><span class="badge badge-sub text-dark">${m.subscriptionType}</span></td>
+                        <td><span class="badge ${statusBadge}">${m.status || 'active'}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info btn-action" onclick="openEditModal(${m.id})">تعديل</button>
+                            <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteMember(${m.id})">حذف</button>
+                        </td>
+                    </tr>`;
+            });
+        } catch (error) { console.error('Error loading members:', error); }
+    }
+
+    // 2. فتح نافذة التعديل وتعبئة البيانات
+    async function openEditModal(id) {
+        try {
+            const response = await fetch(API_URL);
+            const members = await response.json();
+            const m = members.find(item => item.id === id);
+
+            if (m) {
+                document.getElementById('editId').value = m.id;
+                document.getElementById('editFullName').value = m.fullName;
+                document.getElementById('editPhone').value = m.phone;
+                document.getElementById('editStartDate').value = m.startDate;
+                document.getElementById('editRemainingVisits').value = m.remainingVisits;
+                document.getElementById('editSubscriptionType').value = m.subscriptionType;
+                
+                const editModal = new bootstrap.Modal(document.getElementById('editMemberModal'));
+                editModal.show();
+            }
+        } catch (error) { alert('خطأ في جلب البيانات'); }
+    }
+
+    // إغلاق النوافذ المنبثقة بشكل آمن
+    function closeModalSafely(modalId) {
+        const modalElement = document.getElementById(modalId);
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+    }
+
+    // 3. إضافة مشترك جديد
+    document.getElementById('addMemberForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+
+        const data = {
+            fullName: document.getElementById('fullName').value,
+            phone: document.getElementById('phone').value,
+            gender: document.getElementById('gender').value,
+            startDate: document.getElementById('startDate').value,
+            remainingVisits: document.getElementById('remainingVisits').value,
+            subscriptionType: document.getElementById('subscriptionType').value,
+            status: 'active'
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (response.ok) {
+                closeModalSafely('addMemberModal');
+                this.reset();
+                loadMembers();
+            } else {
+                alert('فشل في حفظ البيانات');
+            }
+        } catch (error) { alert('خطأ في الاتصال بالخادم'); }
+        finally { btn.disabled = false; }
+    });
+
+    // 4. تحديث مشترك (حفظ التعديلات)
+    document.getElementById('editMemberForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const id = document.getElementById('editId').value;
+        const btn = document.getElementById('updateBtn');
+        btn.disabled = true;
+
+        const data = {
+            fullName: document.getElementById('editFullName').value,
+            phone: document.getElementById('editPhone').value,
+            startDate: document.getElementById('editStartDate').value,
+            remainingVisits: document.getElementById('editRemainingVisits').value,
+            subscriptionType: document.getElementById('editSubscriptionType').value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (response.ok) {
+                closeModalSafely('editMemberModal');
+                loadMembers();
+                alert('تم التحديث بنجاح');
+            } else {
+                alert('فشل في تحديث البيانات');
+            }
+        } catch (error) { alert('خطأ في الاتصال بالخادم'); }
+        finally { btn.disabled = false; }
+    });
+
+    // 5. حذف مشترك
+    async function deleteMember(id) {
+        if (confirm('هل أنت متأكد من حذف هذا المشترك نهائياً؟')) {
+            try {
+                const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    loadMembers();
+                } else {
+                    alert('فشل الحذف');
+                }
+            } catch (error) { alert('خطأ في الاتصال بالخادم'); }
+        }
+    }
+
+    // تشغيل جلب البيانات عند فتح الصفحة
+    document.addEventListener('DOMContentLoaded', loadMembers);
+</script>
+</body>
+</html>
